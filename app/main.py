@@ -3,6 +3,9 @@ from fastapi.params import Body
 from pydantic import BaseModel #seperates the content of the body automaticaly,and can check if it is their or not and it's type
 from typing import Optional
 from random import randrange
+import psycopg2
+from psycopg2.extras import RealDictCursor
+import time
 
 
 app = FastAPI()
@@ -14,6 +17,25 @@ class Post(BaseModel):
     published: bool = True #seting default
     rating: Optional[int] = None #optional field
 
+
+while True:
+    
+    try:
+        conn = psycopg2.connect(host="ep-delicate-dawn-ad9x94q3-pooler.c-2.us-east-1.aws.neon.tech",
+        database="neondb",
+        user="neondb_owner",
+        password="npg_6bIRx5Jgwryd",
+        port=5432,
+        sslmode="require",
+        cursor_factory=RealDictCursor)
+        cursor = conn.cursor()
+        print("database connected")
+        break
+
+    except Exception as error:
+        print("failed to connect")
+        print("ERROR :",error)
+        time.sleep(10)
 
 my_posts=[
     {"title":"title...","content":"content...","id":1},
@@ -37,6 +59,9 @@ async def root():
 
 @app.get("/posts")
 def get_post():
+    cursor.execute("""SELECT * FROM "new-schema"."posts" """)
+    posts= cursor.fetchall()
+    print(posts)
     return {"data": my_posts}
 
 @app.post("/posts" , status_code=status.HTTP_201_CREATED)
