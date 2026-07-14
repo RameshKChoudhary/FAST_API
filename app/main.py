@@ -62,16 +62,20 @@ def get_post():
     cursor.execute("""SELECT * FROM "new-schema"."posts" """)
     posts= cursor.fetchall()
     print(posts)
-    return {"data": my_posts}
+    return {"data": posts}
 
 @app.post("/posts" , status_code=status.HTTP_201_CREATED)
 def create(post: Post):
-    # print(post)
-    # print(post.dict()) #converting to dict
-    post_dict=post.dict()
-    post_dict['id']=randrange(0,1000000)
-    my_posts.append(post_dict)
-    return {"new post": post_dict}
+    # # print(post)
+    # # print(post.dict()) #converting to dict
+    # post_dict=post.dict()
+    # post_dict['id']=randrange(0,1000000)
+    # my_posts.append(post_dict)
+    # return {"new post": post_dict}
+    cursor.execute("""INSERT INTO "new-schema"."posts" (title,content,published) VALUES (%s,%s,%s) RETURNING * """,(post.title,post.content,post.published))
+    new_post = cursor.fetchone()
+    conn.commit()
+    return {"new post": new_post}
 
 @app.get("/posts/{id}")
 def get_post(id:int): #converts to int
