@@ -9,5 +9,7 @@ pip install psycopg2
 uvicorn app.main:app --reload
 after this do the port public
 
+pip install sqlalchemy
+
 
 to check :https://hoppscotch.io/
