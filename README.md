@@ -7,6 +7,7 @@ source venv/bin/activate
 pip install fastapi[all]
 pip install psycopg2
 uvicorn app.main:app --reload
+after this do the port public
 
 
 to check :https://hoppscotch.io/
