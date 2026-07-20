@@ -21,7 +21,6 @@ class Post(BaseModel):
     title: str
     content: str
     published: bool = True #seting default
-    rating: Optional[int] = None #optional field
 
 
 while True:
@@ -73,23 +72,34 @@ def test_posts(db: Session = Depends(get_db)):
 
 
 @app.get("/posts")
-def get_post():
-    cursor.execute("""SELECT * FROM "new-schema"."posts" """)
-    posts= cursor.fetchall()
-    print(posts)
-    return {"data": posts}
+def get_post(db: Session = Depends(get_db)):
+    # cursor.execute("""SELECT * FROM "new-schema"."posts" """)
+    # all_posts= cursor.fetchall()
+    # print(all_posts)
+    all_posts = db.query(models.Post).all()
+    return {"data": all_posts}
 
 @app.post("/posts" , status_code=status.HTTP_201_CREATED)
-def create(post: Post):
+def create(post: Post , db: Session = Depends(get_db)):
+
     # # print(post)
     # # print(post.dict()) #converting to dict
     # post_dict=post.dict()
     # post_dict['id']=randrange(0,1000000)
     # my_posts.append(post_dict)
     # return {"new post": post_dict}
-    cursor.execute("""INSERT INTO "new-schema"."posts" (title,content,published) VALUES (%s,%s,%s) RETURNING * """,(post.title,post.content,post.published))
-    new_post = cursor.fetchone()
-    conn.commit()
+
+    # cursor.execute("""INSERT INTO "new-schema"."posts" (title,content,published) VALUES (%s,%s,%s) RETURNING * """,(post.title,post.content,post.published))
+    # new_post = cursor.fetchone()
+    # conn.commit()
+
+
+    # new_post = models.Post(title = post.title,content = post.content, published = post.published)
+    
+    new_post = models.Post(**post.dict())
+    db.add(new_post)
+    db.commit()
+    db.refresh(new_post)
     return {"new post": new_post}
 
 @app.get("/posts/{id}")
