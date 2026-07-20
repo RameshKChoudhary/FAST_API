@@ -67,7 +67,8 @@ async def root():
 
 @app.get("/sqla")
 def test_posts(db: Session = Depends(get_db)):
-    return {"status":"success"}
+    all_posts = db.query(models.Post).all()
+    return {"data":all_posts}
 
 
 
