@@ -7,20 +7,13 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import time
 from sqlalchemy.orm import Session
-from . import models
+from . import models , schema
 from .database import engine ,get_db
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-
-
-
-class Post(BaseModel):
-    title: str
-    content: str
-    published: bool = True #seting default
 
 
 while True:
@@ -80,7 +73,7 @@ def get_post(db: Session = Depends(get_db)):
     return {"data": all_posts}
 
 @app.post("/posts" , status_code=status.HTTP_201_CREATED)
-def create(post: Post , db: Session = Depends(get_db)):
+def create(post: schema.Postcreate , db: Session = Depends(get_db)):
 
     # # print(post)
     # # print(post.dict()) #converting to dict
@@ -136,7 +129,7 @@ def delete_post(id : int , db: Session = Depends(get_db)):
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @app.put("/posts/{id}")
-def update_post(id : int , post : Post , db: Session = Depends(get_db)):
+def update_post(id : int , post : schema.Postcreate , db: Session = Depends(get_db)):
     # cursor.execute("""UPDATE "new-schema"."posts" SET title = %s, content = %s, published = %s WHERE id = %s RETURNING *""",(post.title,post.content,post.published,str(id)))
     # updated_post = cursor.fetchone()
     # conn.commit()
