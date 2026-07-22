@@ -57,22 +57,16 @@ async def root():
 
 
 
-@app.get("/sqla")
-def test_posts(db: Session = Depends(get_db)):
-    all_posts = db.query(models.Post).all()
-    return {"data":all_posts}
 
-
-
-@app.get("/posts")
+@app.get("/posts", response_model=schema.Post)
 def get_post(db: Session = Depends(get_db)):
     # cursor.execute("""SELECT * FROM "new-schema"."posts" """)
     # all_posts= cursor.fetchall()
     # print(all_posts)
     all_posts = db.query(models.Post).all()
-    return {"data": all_posts}
+    return  all_posts
 
-@app.post("/posts" , status_code=status.HTTP_201_CREATED)
+@app.post("/posts" , status_code=status.HTTP_201_CREATED , response_model=schema.Post)
 def create(post: schema.Postcreate , db: Session = Depends(get_db)):
 
     # # print(post)
@@ -93,9 +87,9 @@ def create(post: schema.Postcreate , db: Session = Depends(get_db)):
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
-    return {"new post": new_post}
+    return new_post
 
-@app.get("/posts/{id}")
+@app.get("/posts/{id}" , response_model=schema.Post)
 def get_post(id:int , db: Session = Depends(get_db)): #converts to int
 
     # cursor.execute("""SELECT * FROM "new-schema"."posts" WHERE id = %s """,(str(id)))
@@ -107,7 +101,7 @@ def get_post(id:int , db: Session = Depends(get_db)): #converts to int
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                             detail=f"post with if: {id} was not found")
 
-    return {"post details":post}
+    return post
 
 
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -128,7 +122,7 @@ def delete_post(id : int , db: Session = Depends(get_db)):
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-@app.put("/posts/{id}")
+@app.put("/posts/{id}" ,  response_model=schema.Post)
 def update_post(id : int , post : schema.Postcreate , db: Session = Depends(get_db)):
     # cursor.execute("""UPDATE "new-schema"."posts" SET title = %s, content = %s, published = %s WHERE id = %s RETURNING *""",(post.title,post.content,post.published,str(id)))
     # updated_post = cursor.fetchone()
@@ -142,4 +136,4 @@ def update_post(id : int , post : schema.Postcreate , db: Session = Depends(get_
     post_query.update(post.dict(),synchronize_session=False)
     db.commit()
  
-    return {"updated data":post_query.first()}
+    return post_query.first()
