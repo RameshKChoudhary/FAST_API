@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Response , status , HTTPException, Depends
 from fastapi.params import Body
 from pydantic import BaseModel #seperates the content of the body automaticaly,and can check if it is their or not and it's type
-from typing import Optional
+from typing import Optional , List
 from random import randrange
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -58,7 +58,7 @@ async def root():
 
 
 
-@app.get("/posts", response_model=schema.Post)
+@app.get("/posts", response_model=List[schema.Post])
 def get_post(db: Session = Depends(get_db)):
     # cursor.execute("""SELECT * FROM "new-schema"."posts" """)
     # all_posts= cursor.fetchall()
@@ -137,3 +137,14 @@ def update_post(id : int , post : schema.Postcreate , db: Session = Depends(get_
     db.commit()
  
     return post_query.first()
+
+
+
+@app.post("/users" , status_code=status.HTTP_201_CREATED , response_model=schema.UserOut)
+def create_user(user : schema.UserCreate , db: Session = Depends(get_db)):
+    new_user = models.User(**user.dict())
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    return new_user
