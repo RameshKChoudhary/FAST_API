@@ -3,12 +3,17 @@ from fastapi.params import Body
 from pydantic import BaseModel #seperates the content of the body automaticaly,and can check if it is their or not and it's type
 from typing import Optional , List
 from random import randrange
+from passlib.context import CryptContext
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import time
 from sqlalchemy.orm import Session
 from . import models , schema
 from .database import engine ,get_db
+
+
+
+pwd_context = CryptContext(schemes=["bcrypt"],deprecated="auto")
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -142,6 +147,11 @@ def update_post(id : int , post : schema.Postcreate , db: Session = Depends(get_
 
 @app.post("/users" , status_code=status.HTTP_201_CREATED , response_model=schema.UserOut)
 def create_user(user : schema.UserCreate , db: Session = Depends(get_db)):
+
+    #hash the password - user.password
+    hashed_password = pwd_context.hash(user.password)
+    user.password = hashed_password
+
     new_user = models.User(**user.dict())
     db.add(new_user)
     db.commit()

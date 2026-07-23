@@ -21,7 +21,7 @@ class UserCreate(BaseModel):
     password : str
 
 class UserOut(BaseModel):
-    id = int
+    id : int
     email : EmailStr
     created_at : datetime
 
